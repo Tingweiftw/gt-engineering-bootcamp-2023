@@ -1,4 +1,4 @@
 
 export async function generateContent(message: string) {
-    return message ;
+    return 'GPT GENERATED CONTENT ' + message ;
 }

@@ -10,6 +10,7 @@ import crossIcon from "../icons/cross.svg";
 export type TodoItemProps = {
   id: string;
   description: string;
+  content?: string;
   done: boolean;
   refreshToDos: () => void;
 };
@@ -30,6 +31,12 @@ function TodoItem(props: TodoItemProps) {
     props.refreshToDos();
   }, [props.id, props.refreshToDos]);
 
+  const generateGptContent = useCallback(async (id: string) => {
+    console.log('generate gpt content function called');
+    await axios.post(`${CONFIG.API_ENDPOINT}/todos/${id}/generate`);
+    props.refreshToDos();
+  }, []);
+
   useEffect(() => {
     /* mark the todo when done (as a dependency) changes */
     console.log(props.description, "is marked as ", done ? "done" : "undone");
@@ -46,7 +53,13 @@ function TodoItem(props: TodoItemProps) {
           />
         </td>
         <td width={"100%"}>{props.description}</td>
-        <td>
+        <td style={{ display: 'flex' }}>
+        <Button 
+            onClick={(e) => generateGptContent(props.id)}
+            style={{ marginRight: 20 }}
+          >
+            Generate
+          </Button>
           <img
             alt="delete-icon"
             src={crossIcon}
@@ -55,6 +68,12 @@ function TodoItem(props: TodoItemProps) {
           />
         </td>
       </tr>
+      {props.content && (
+        <tr>
+          <td></td>
+          <td>{props.content}</td>
+        </tr>
+      )}
     </>
   );
 }
@@ -113,11 +132,13 @@ function Todo() {
           </thead>
           <tbody>
             {Object.keys(todoItems).map((item) => (
-              <TodoItem
-                key={todoItems[item].id}
-                {...todoItems[item]}
-                refreshToDos={populateTodos}
-              />
+              <>
+                <TodoItem
+                  key={todoItems[item].id}
+                  {...todoItems[item]}
+                  refreshToDos={populateTodos}
+                />
+              </>
             ))}
             <tr>
               <td>
